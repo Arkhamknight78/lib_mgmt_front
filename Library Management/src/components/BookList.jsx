@@ -1,20 +1,29 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
+import api from "../api";
 
 const BookList = () => {
-  const [books, setBooks] = useState([
-    { id: 1, title: "Book 1", author: "Author 1" },
-    { id: 2, title: "Book 2", author: "Author 2" },
-  ]);
+  const [books, setBooks] = useState([]);
+
+  useEffect(() => {
+    const fetchBooks = async () => {
+      try {
+        const response = await api.get("/books"); // Adjust endpoint as per your backend
+        setBooks(response.data);
+      } catch (error) {
+        console.error("Error fetching books:", error);
+      }
+    };
+
+    fetchBooks();
+  }, []);
 
   return (
-    <div className="max-w-2xl mx-auto bg-white p-6 rounded shadow">
-      <h2 className="text-xl font-bold mb-4">Book List</h2>
-      <ul className="divide-y divide-gray-200">
+    <div className="p-6">
+      <h1 className="text-2xl font-bold mb-4">Book List</h1>
+      <ul>
         {books.map((book) => (
-          <li key={book.id} className="py-2">
-            <div className="flex justify-between">
-              <span>{book.title} by {book.author}</span>
-            </div>
+          <li key={book.id} className="mb-2">
+            {book.title} - {book.author} ({book.availability ? "Available" : "Borrowed"})
           </li>
         ))}
       </ul>

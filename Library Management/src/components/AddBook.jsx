@@ -1,44 +1,59 @@
 import React, { useState } from "react";
+import api from "../api"; // Import your Axios instance
 
-const AddBook = () => {
-  const [title, setTitle] = useState("");
-  const [author, setAuthor] = useState("");
+const AddBooks = () => {
+  const [book, setBook] = useState({ title: "", author: "", year: "", availability: true });
 
-  const handleSubmit = (e) => {
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setBook({ ...book, [name]: value });
+  };
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log("Book Added:", { title, author });
-    setTitle("");
-    setAuthor("");
+    try {
+      const response = await api.post("/books", book); // API call to add book
+      console.log("Book added:", response.data);
+      alert("Book added successfully!");
+      setBook({ title: "", author: "", year: "", availability: true }); // Reset form
+    } catch (error) {
+      console.error("Error adding book:", error);
+      alert("Failed to add the book.");
+    }
   };
 
   return (
-    <div className="max-w-md mx-auto bg-white p-6 rounded shadow">
-      <h2 className="text-xl font-bold mb-4">Add New Book</h2>
+    <div className="p-6">
+      <h1 className="text-2xl font-bold mb-4">Add a New Book</h1>
       <form onSubmit={handleSubmit} className="space-y-4">
-        <div>
-          <label className="block text-gray-700">Title:</label>
-          <input
-            type="text"
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-            required
-            className="w-full p-2 border rounded"
-          />
-        </div>
-        <div>
-          <label className="block text-gray-700">Author:</label>
-          <input
-            type="text"
-            value={author}
-            onChange={(e) => setAuthor(e.target.value)}
-            required
-            className="w-full p-2 border rounded"
-          />
-        </div>
-        <button
-          type="submit"
-          className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
-        >
+        <input
+          type="text"
+          name="title"
+          placeholder="Title"
+          value={book.title}
+          onChange={handleChange}
+          className="border p-2 w-full"
+          required
+        />
+        <input
+          type="text"
+          name="author"
+          placeholder="Author"
+          value={book.author}
+          onChange={handleChange}
+          className="border p-2 w-full"
+          required
+        />
+        <input
+          type="number"
+          name="year"
+          placeholder="Publication Year"
+          value={book.year}
+          onChange={handleChange}
+          className="border p-2 w-full"
+          required
+        />
+        <button type="submit" className="bg-blue-500 text-white px-4 py-2 rounded">
           Add Book
         </button>
       </form>
@@ -46,4 +61,4 @@ const AddBook = () => {
   );
 };
 
-export default AddBook;
+export default AddBooks;

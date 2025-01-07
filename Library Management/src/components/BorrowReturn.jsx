@@ -1,38 +1,63 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
+import api from "../api";
 
 const BorrowReturn = () => {
-  const [books, setBooks] = useState([
-    { id: 1, title: "Book 1", borrowed: false },
-    { id: 2, title: "Book 2", borrowed: true },
-  ]);
+  const [books, setBooks] = useState([]);
 
-  const toggleBorrow = (id) => {
-    setBooks(
-      books.map((book) =>
-        book.id === id ? { ...book, borrowed: !book.borrowed } : book
-      )
-    );
+  useEffect(() => {
+    const fetchBooks = async () => {
+      try {
+        const response = await api.get("/books"); // Fetch books from backend
+        setBooks(response.data);
+      } catch (error) {
+        console.error("Error fetching books:", error);
+      }
+    };
+
+    fetchBooks();
+  }, []);
+
+  const handleBorrowReturn = async (bookId, action) => {
+    try {
+      const endpoint = action === "borrow" ? `/borrow/${bookId}` : `/return/${bookId}`;
+      const response = await api.post(endpoint); // Borrow or return book
+      console.log(`${action} successful:`, response.data);
+      alert(`${action === "borrow" ? "Borrowed" : "Returned"} successfully!`);
+      setBooks((prevBooks) =>
+        prevBooks.map((book) =>
+          book.id === bookId ? { ...book, availability: action !== "borrow" } : book
+        )
+      );
+    } catch (error) {
+      console.error(`Error during ${action}:`, error);
+      alert(`Failed to ${action} the book.`);
+    }
   };
 
   return (
-    <div className="max-w-2xl mx-auto bg-white p-6 rounded shadow">
-      <h2 className="text-xl font-bold mb-4">Borrow/Return Books</h2>
-      <ul className="divide-y divide-gray-200">
+    <div className="p-6">
+      <h1 className="text-2xl font-bold mb-4">Borrow/Return Books</h1>
+      <ul className="space-y-4">
         {books.map((book) => (
-          <li key={book.id} className="py-4 flex justify-between items-center">
+          <li key={book.id} className="flex justify-between items-center">
             <span>
-              {book.title} - {book.borrowed ? "Borrowed" : "Available"}
+              {book.title} - {book.availability ? "Available" : "Borrowed"}
             </span>
-            <button
-              onClick={() => toggleBorrow(book.id)}
-              className={`px-4 py-2 rounded ${
-                book.borrowed
-                  ? "bg-red-600 text-white hover:bg-red-700"
-                  : "bg-green-600 text-white hover:bg-green-700"
-              }`}
-            >
-              {book.borrowed ? "Return" : "Borrow"}
-            </button>
+            {book.availability ? (
+              <button
+                onClick={() => handleBorrowReturn(book.id, "borrow")}
+                className="bg-green-500 text-white px-4 py-2 rounded"
+              >
+                Borrow
+              </button>
+            ) : (
+              <button
+                onClick={() => handleBorrowReturn(book.id, "return")}
+                className="bg-red-500 text-white px-4 py-2 rounded"
+              >
+                Return
+              </button>
+            )}
           </li>
         ))}
       </ul>
